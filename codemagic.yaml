@@ -1,0 +1,33 @@
+workflows:
+  android-release-workflow:
+    name: Android Release APK Build
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    environment:
+      groups:
+        - keystore_credentials # Note: Set these up in Codemagic UI if signing is needed
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Set up local.properties
+        script: |
+          echo "flutter.sdk=$FLUTTER_ROOT" > android/local.properties
+      - name: Get Flutter dependencies
+        script: |
+          flutter pub get
+      - name: Clean build environment
+        script: |
+          flutter clean
+      - name: Build Android APK
+        script: |
+          flutter build apk --release
+    artifacts:
+      - build/app/outputs/flutter-apk/app-release.apk
+    publishing:
+      email:
+        recipients:
+          - sm.rakib.773@gmail.com # Updated based on your metadata
+        notify:
+          success: true
+          failure: true
