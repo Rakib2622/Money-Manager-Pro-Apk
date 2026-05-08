@@ -9,40 +9,57 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
     steps:
+      # 1. Checkout code
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2. Setup Node.js (required for Capacitor)
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 24
 
+      # 3. Install dependencies
       - name: Install dependencies
         run: npm install
 
+      # 4. Build React/Vite app
       - name: Build web app
         run: npm run build
 
+      # 5. Install Capacitor Android
       - name: Install Capacitor Android
         run: npm install @capacitor/android
 
+      # 6. Sync Capacitor (generate Android project)
       - name: Sync Capacitor
         run: npx cap sync android
 
+      # 7. Setup Java (Android requirement)
       - name: Setup Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: 17
 
-      - name: Build APK
+      # 8. Fix Gradle permissions
+      - name: Fix Gradle permissions
         run: |
           cd android
           chmod +x gradlew
+
+      # 9. Build APK
+      - name: Build APK
+        run: |
+          cd android
           ./gradlew assembleDebug
 
-      - name: Upload APK
+      # 10. Upload APK
+      - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: app-debug-apk
